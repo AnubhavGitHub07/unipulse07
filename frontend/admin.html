@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - UniPulse</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-indigo-600 text-white shadow-lg">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center space-x-2">
+                    <h1 class="text-2xl font-bold">UniPulse</h1>
+                    <span class="text-indigo-200">| Admin Dashboard</span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span id="adminName" class="text-indigo-200"></span>
+                    <button id="logoutBtn" class="bg-indigo-700 hover:bg-indigo-800 px-4 py-2 rounded transition">
+                        Logout
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-4 py-8">
+        <!-- Tabs -->
+        <div class="mb-6 border-b border-gray-200">
+            <nav class="flex space-x-8">
+                <button class="tab-btn active px-1 py-4 text-sm font-medium text-indigo-600 border-b-2 border-indigo-600" data-tab="dashboard">
+                    Dashboard
+                </button>
+                <button class="tab-btn px-1 py-4 text-sm font-medium text-gray-500 hover:text-gray-700" data-tab="attendance">
+                    Attendance
+                </button>
+                <button class="tab-btn px-1 py-4 text-sm font-medium text-gray-500 hover:text-gray-700" data-tab="timetable">
+                    Timetable
+                </button>
+                <button class="tab-btn px-1 py-4 text-sm font-medium text-gray-500 hover:text-gray-700" data-tab="pyq">
+                    PYQs
+                </button>
+                <button class="tab-btn px-1 py-4 text-sm font-medium text-gray-500 hover:text-gray-700" data-tab="results">
+                    Results
+                </button>
+                <button class="tab-btn px-1 py-4 text-sm font-medium text-gray-500 hover:text-gray-700" data-tab="analytics">
+                    Analytics
+                </button>
+            </nav>
+        </div>
+
+        <!-- Dashboard Tab -->
+        <div id="dashboard" class="tab-content">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Admin Dashboard</h2>
+            
+            <!-- Stats Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <h3 class="text-gray-600 mb-2">Total Students</h3>
+                    <p class="text-3xl font-bold text-indigo-600" id="totalStudents">-</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <h3 class="text-gray-600 mb-2">Total Attendance Records</h3>
+                    <p class="text-3xl font-bold text-blue-600" id="totalAttendance">-</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <h3 class="text-gray-600 mb-2">Total PYQs</h3>
+                    <p class="text-3xl font-bold text-purple-600" id="totalPyqs">-</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <h3 class="text-gray-600 mb-2">Total Results</h3>
+                    <p class="text-3xl font-bold text-green-600" id="totalResults">-</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Attendance Tab -->
+        <div id="attendance" class="tab-content hidden">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Attendance Management</h2>
+            
+            <!-- Upload CSV Card -->
+            <div class="bg-white p-6 rounded-lg shadow mb-6">
+                <h3 class="text-xl font-semibold text-gray-800 mb-4">Upload Attendance CSV</h3>
+                <p class="text-gray-600 mb-4">CSV format: student_id, subject, date (YYYY-MM-DD), status (present/absent)</p>
+                <input type="file" id="attendanceCsvFile" accept=".csv" class="mb-4">
+                <button id="uploadAttendanceCsvBtn" class="bg-indigo-600 text-white px-6 py-2 rounded hover:bg-indigo-700">
+                    Upload CSV
+                </button>
+                <div id="uploadStatus" class="mt-4"></div>
+            </div>
+
+            <!-- Manual Entry -->
+            <div class="bg-white p-6 rounded-lg shadow mb-6">
+                <h3 class="text-xl font-semibold text-gray-800 mb-4">Manual Entry</h3>
+                <form id="manualAttendanceForm" class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <input type="text" id="manualStudentId" placeholder="Student ID" class="px-3 py-2 border rounded-md" required>
+                    <input type="text" id="manualSubject" placeholder="Subject" class="px-3 py-2 border rounded-md" required>
+                    <input type="date" id="manualDate" class="px-3 py-2 border rounded-md" required>
+                    <select id="manualStatus" class="px-3 py-2 border rounded-md" required>
+                        <option value="present">Present</option>
+                        <option value="absent">Absent</option>
+                    </select>
+                    <button type="submit" class="bg-indigo-600 text-white px-6 py-2 rounded hover:bg-indigo-700">
+                        Add Record
+                    </button>
+                </form>
+            </div>
+
+            <!-- Attendance Records -->
+            <div class="bg-white rounded-lg shadow overflow-hidden">
+                <h3 class="text-xl font-semibold text-gray-800 p-6 border-b">Attendance Records</h3>
+                <div class="p-4 border-b">
+                    <input type="text" id="attendanceSearch" placeholder="Search by Student ID or Subject" class="w-full px-3 py-2 border rounded-md">
+                </div>
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Student ID</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Subject</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Date</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="attendanceTableBody" class="bg-white divide-y divide-gray-200">
+                            <tr>
+                                <td colspan="4" class="px-6 py-4 text-center text-gray-500">No records</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Timetable Tab -->
+        <div id="timetable" class="tab-content hidden">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Timetable Management</h2>
+            <div class="bg-white p-6 rounded-lg shadow">
+                <form id="timetableForm" class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Day</label>
+                            <select id="timetableDay" class="w-full px-3 py-2 border rounded-md" required>
+                                <option value="">Select Day</option>
+                                <option value="Monday">Monday</option>
+                                <option value="Tuesday">Tuesday</option>
+                                <option value="Wednesday">Wednesday</option>
+                                <option value="Thursday">Thursday</option>
+                                <option value="Friday">Friday</option>
+                                <option value="Saturday">Saturday</option>
+                                <option value="Sunday">Sunday</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Student ID (Optional - leave blank for common)</label>
+                            <input type="text" id="timetableStudentId" class="w-full px-3 py-2 border rounded-md" placeholder="Leave blank for common">
+                        </div>
+                    </div>
+                    <div id="timeSlots" class="space-y-2">
+                        <div class="time-slot-entry flex gap-2 items-end">
+                            <div class="flex-1">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Start Time</label>
+                                <input type="time" class="start-time w-full px-3 py-2 border rounded-md" required>
+                            </div>
+                            <div class="flex-1">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">End Time</label>
+                                <input type="time" class="end-time w-full px-3 py-2 border rounded-md" required>
+                            </div>
+                            <div class="flex-1">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Subject</label>
+                                <input type="text" class="subject w-full px-3 py-2 border rounded-md" required>
+                            </div>
+                            <div class="flex-1">
+                                <label class="block text-sm font-medium text-gray-700 mb-1">Faculty (Optional)</label>
+                                <input type="text" class="faculty w-full px-3 py-2 border rounded-md">
+                            </div>
+                            <button type="button" class="remove-slot bg-red-500 text-white px-3 py-2 rounded hover:bg-red-600">Remove</button>
+                        </div>
+                    </div>
+                    <button type="button" id="addTimeSlot" class="bg-gray-500 text-white px-4 py-2 rounded hover:bg-gray-600">
+                        Add Time Slot
+                    </button>
+                    <button type="submit" class="bg-indigo-600 text-white px-6 py-2 rounded hover:bg-indigo-700">
+                        Save Timetable
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- PYQ Tab -->
+        <div id="pyq" class="tab-content hidden">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">PYQ Management</h2>
+            
+            <!-- Upload Form -->
+            <div class="bg-white p-6 rounded-lg shadow mb-6">
+                <h3 class="text-xl font-semibold text-gray-800 mb-4">Upload PYQ</h3>
+                <form id="pyqUploadForm" class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Subject</label>
+                            <input type="text" id="pyqSubject" class="w-full px-3 py-2 border rounded-md" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Semester</label>
+                            <input type="number" id="pyqSemester" min="1" max="8" class="w-full px-3 py-2 border rounded-md" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Year</label>
+                            <input type="number" id="pyqYear" class="w-full px-3 py-2 border rounded-md" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Exam Type</label>
+                            <select id="pyqExamType" class="w-full px-3 py-2 border rounded-md" required>
+                                <option value="midterm">Midterm</option>
+                                <option value="final">Final</option>
+                                <option value="quiz">Quiz</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">File (PDF, DOC, DOCX)</label>
+                        <input type="file" id="pyqFile" accept=".pdf,.doc,.docx" class="w-full px-3 py-2 border rounded-md" required>
+                    </div>
+                    <button type="submit" class="bg-indigo-600 text-white px-6 py-2 rounded hover:bg-indigo-700">
+                        Upload PYQ
+                    </button>
+                </form>
+            </div>
+
+            <!-- PYQ List -->
+            <div id="pyqList" class="space-y-4"></div>
+        </div>
+
+        <!-- Results Tab -->
+        <div id="results" class="tab-content hidden">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Results Management</h2>
+            
+            <!-- Upload Form -->
+            <div class="bg-white p-6 rounded-lg shadow mb-6">
+                <h3 class="text-xl font-semibold text-gray-800 mb-4">Upload Result</h3>
+                <form id="resultUploadForm" class="space-y-4">
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Student ID</label>
+                            <input type="text" id="resultStudentId" class="w-full px-3 py-2 border rounded-md" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Semester</label>
+                            <input type="number" id="resultSemester" min="1" max="8" class="w-full px-3 py-2 border rounded-md" required>
+                        </div>
+                        <div>
+                            <label class="block text-sm font-medium text-gray-700 mb-1">Academic Year</label>
+                            <input type="text" id="resultAcademicYear" placeholder="2023-24" class="w-full px-3 py-2 border rounded-md" required>
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Result PDF (Optional)</label>
+                        <input type="file" id="resultFile" accept=".pdf" class="w-full px-3 py-2 border rounded-md">
+                    </div>
+                    <button type="submit" class="bg-indigo-600 text-white px-6 py-2 rounded hover:bg-indigo-700">
+                        Upload Result
+                    </button>
+                </form>
+            </div>
+
+            <!-- Results List -->
+            <div id="resultsList" class="space-y-4"></div>
+        </div>
+
+        <!-- Analytics Tab -->
+        <div id="analytics" class="tab-content hidden">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Analytics</h2>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4">Attendance Overview</h3>
+                    <canvas id="attendanceOverviewChart"></canvas>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <h3 class="text-xl font-semibold text-gray-800 mb-4">Subject-wise Attendance</h3>
+                    <canvas id="subjectAttendanceChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/admin.js"></script>
+</body>
+</html>
+

@@ -1,0 +1,211 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Portal - UniPulse</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="bg-gray-50 min-h-screen">
+    <!-- Navigation -->
+    <nav class="bg-indigo-600 text-white shadow-lg">
+        <div class="container mx-auto px-4">
+            <div class="flex justify-between items-center py-4">
+                <div class="flex items-center space-x-2">
+                    <h1 class="text-2xl font-bold">UniPulse</h1>
+                    <span class="text-indigo-200">| Student Portal</span>
+                </div>
+                <div class="flex items-center space-x-4">
+                    <span id="studentName" class="text-indigo-200"></span>
+                    <button id="logoutBtn" class="bg-indigo-700 hover:bg-indigo-800 px-4 py-2 rounded transition">
+                        Logout
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="container mx-auto px-4 py-8">
+        <!-- Tabs -->
+        <div class="mb-6 border-b border-gray-200">
+            <nav class="flex space-x-8">
+                <button class="tab-btn active px-1 py-4 text-sm font-medium text-indigo-600 border-b-2 border-indigo-600" data-tab="dashboard">
+                    Dashboard
+                </button>
+                <button class="tab-btn px-1 py-4 text-sm font-medium text-gray-500 hover:text-gray-700" data-tab="attendance">
+                    Attendance
+                </button>
+                <button class="tab-btn px-1 py-4 text-sm font-medium text-gray-500 hover:text-gray-700" data-tab="timetable">
+                    Timetable
+                </button>
+                <button class="tab-btn px-1 py-4 text-sm font-medium text-gray-500 hover:text-gray-700" data-tab="pyq">
+                    PYQs
+                </button>
+                <button class="tab-btn px-1 py-4 text-sm font-medium text-gray-500 hover:text-gray-700" data-tab="results">
+                    Results
+                </button>
+            </nav>
+        </div>
+
+        <!-- Dashboard Tab -->
+        <div id="dashboard" class="tab-content">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Dashboard</h2>
+            
+            <!-- Stats Cards -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <h3 class="text-gray-600 mb-2">Overall Attendance</h3>
+                    <p class="text-3xl font-bold text-indigo-600" id="overallAttendance">-</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <h3 class="text-gray-600 mb-2">CGPA</h3>
+                    <p class="text-3xl font-bold text-green-600" id="cgpa">-</p>
+                </div>
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <h3 class="text-gray-600 mb-2">Total PYQs</h3>
+                    <p class="text-3xl font-bold text-purple-600" id="totalPyqs">-</p>
+                </div>
+            </div>
+
+            <!-- Attendance Chart -->
+            <div class="bg-white p-6 rounded-lg shadow mb-6">
+                <h3 class="text-xl font-semibold text-gray-800 mb-4">Attendance by Subject</h3>
+                <canvas id="attendanceChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Attendance Tab -->
+        <div id="attendance" class="tab-content hidden">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Attendance Records</h2>
+            
+            <!-- Filters -->
+            <div class="bg-white p-4 rounded-lg shadow mb-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Subject</label>
+                        <select id="attendanceSubjectFilter" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                            <option value="">All Subjects</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Start Date</label>
+                        <input type="date" id="attendanceStartDate" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">End Date</label>
+                        <input type="date" id="attendanceEndDate" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                    </div>
+                </div>
+                <button id="filterAttendanceBtn" class="mt-4 bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">
+                    Filter
+                </button>
+            </div>
+
+            <!-- Attendance Table -->
+            <div class="bg-white rounded-lg shadow overflow-hidden">
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-gray-200">
+                        <thead class="bg-gray-50">
+                            <tr>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Subject</th>
+                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="attendanceTableBody" class="bg-white divide-y divide-gray-200">
+                            <tr>
+                                <td colspan="3" class="px-6 py-4 text-center text-gray-500">Loading...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Subject-wise Stats -->
+            <div class="mt-6 bg-white p-6 rounded-lg shadow">
+                <h3 class="text-xl font-semibold text-gray-800 mb-4">Subject-wise Statistics</h3>
+                <div id="subjectStats" class="space-y-4"></div>
+            </div>
+        </div>
+
+        <!-- Timetable Tab -->
+        <div id="timetable" class="tab-content hidden">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Weekly Timetable</h2>
+            <div id="timetableContent" class="bg-white rounded-lg shadow p-6">
+                <p class="text-gray-500">Loading timetable...</p>
+            </div>
+        </div>
+
+        <!-- PYQ Tab -->
+        <div id="pyq" class="tab-content hidden">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Previous Year Questions</h2>
+            
+            <!-- Filters -->
+            <div class="bg-white p-4 rounded-lg shadow mb-6">
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Subject</label>
+                        <select id="pyqSubjectFilter" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                            <option value="">All Subjects</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Semester</label>
+                        <select id="pyqSemesterFilter" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                            <option value="">All Semesters</option>
+                            <option value="1">1</option>
+                            <option value="2">2</option>
+                            <option value="3">3</option>
+                            <option value="4">4</option>
+                            <option value="5">5</option>
+                            <option value="6">6</option>
+                            <option value="7">7</option>
+                            <option value="8">8</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Year</label>
+                        <input type="number" id="pyqYearFilter" class="w-full px-3 py-2 border border-gray-300 rounded-md" placeholder="e.g., 2023">
+                    </div>
+                    <div>
+                        <label class="block text-sm font-medium text-gray-700 mb-1">Exam Type</label>
+                        <select id="pyqExamTypeFilter" class="w-full px-3 py-2 border border-gray-300 rounded-md">
+                            <option value="">All Types</option>
+                            <option value="midterm">Midterm</option>
+                            <option value="final">Final</option>
+                            <option value="quiz">Quiz</option>
+                        </select>
+                    </div>
+                </div>
+                <button id="filterPyqBtn" class="mt-4 bg-indigo-600 text-white px-4 py-2 rounded hover:bg-indigo-700">
+                    Filter
+                </button>
+            </div>
+
+            <!-- PYQ List -->
+            <div id="pyqList" class="space-y-4">
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <p class="text-gray-500">Loading PYQs...</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Results Tab -->
+        <div id="results" class="tab-content hidden">
+            <h2 class="text-2xl font-bold text-gray-800 mb-6">Results</h2>
+            <div id="resultsList" class="space-y-6">
+                <div class="bg-white p-6 rounded-lg shadow">
+                    <p class="text-gray-500">Loading results...</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/auth.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/student.js"></script>
+</body>
+</html>
+

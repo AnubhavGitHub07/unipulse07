@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  mongodb:
+    image: mongo:7.0
+    container_name: unipulse-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_DATABASE: unipulse
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - unipulse-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: unipulse-backend
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - MONGODB_URI=mongodb://mongodb:27017
+      - DATABASE_NAME=unipulse
+      - JWT_SECRET=${JWT_SECRET:-change-this-secret-key-in-production}
+      - JWT_ALGORITHM=HS256
+      - ACCESS_TOKEN_EXPIRE_MINUTES=1440
+      - CORS_ORIGINS=["*"]
+    volumes:
+      - ./backend/uploads:/app/uploads
+      - ./backend/.env:/app/.env
+    depends_on:
+      - mongodb
+    networks:
+      - unipulse-network
+
+  frontend:
+    image: nginx:alpine
+    container_name: unipulse-frontend
+    restart: unless-stopped
+    ports:
+      - "3000:80"
+    volumes:
+      - ./frontend:/usr/share/nginx/html
+      - ./nginx.conf:/etc/nginx/conf.d/default.conf
+    depends_on:
+      - backend
+    networks:
+      - unipulse-network
+
+volumes:
+  mongodb_data:
+
+networks:
+  unipulse-network:
+    driver: bridge
+
