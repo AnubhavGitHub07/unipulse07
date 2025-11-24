@@ -80,3 +80,4 @@ document.querySelectorAll('.tab-btn').forEach(btn => {
 
 This will manually enable tab switching if the original code isn't working.
 
+
