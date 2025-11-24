@@ -1,6 +1,7 @@
 /* Custom styles for UniPulse */
 
 body {
+    background-color: #f2ededd8 !important;
     font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
